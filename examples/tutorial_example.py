@@ -48,7 +48,7 @@ def example():
 
         observations = env.step(action)
         count_steps += 1
-        cv2.imwrite(f'/home/steidsta/projects/habitat/export_imgs/im_{count_steps}.png', transform_rgb_bgr(observations["rgb"]))
+        # cv2.imwrite(f'/home/steidsta/projects/habitat/export_imgs/im_{count_steps}.png', transform_rgb_bgr(observations["rgb"]))
 
         print("Destination, distance: {:3f}, theta(radians): {:.2f}".format(
            observations["pointgoal_with_gps_compass"][0], observations["pointgoal_with_gps_compass"][1]))
