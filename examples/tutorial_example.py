@@ -16,12 +16,11 @@ def transform_rgb_bgr(image):
 
 
 def example():
-    env = habitat.Env(config=habitat.get_config("configs/tasks/pointnav.yaml"))
+    outputDir = '/Volumes/GoogleDrive/Můj disk/ARTwin/personal/lucivpav/habitat'
+    env = habitat.Env(config=habitat.get_config("configs/datasets/pointnav/mp3d.yaml"))
 
     print("Environment creation successful")
     observations = env.reset()
-    print("Destination, distance: {:3f}, theta(radians): {:.2f}".format(
-        observations["pointgoal_with_gps_compass"][0], observations["pointgoal_with_gps_compass"][1]))
     cv2.imshow("RGB", transform_rgb_bgr(observations["rgb"]))
 
     print("Agent stepping around inside environment.")
@@ -48,10 +47,8 @@ def example():
 
         observations = env.step(action)
         count_steps += 1
-        # cv2.imwrite(f'/home/steidsta/projects/habitat/export_imgs/im_{count_steps}.png', transform_rgb_bgr(observations["rgb"]))
+        cv2.imwrite(os.path.join(outputDir, f'export_imgs/im_{count_steps}.png'), transform_rgb_bgr(observations["rgb"]))
 
-        print("Destination, distance: {:3f}, theta(radians): {:.2f}".format(
-           observations["pointgoal_with_gps_compass"][0], observations["pointgoal_with_gps_compass"][1]))
         cv2.imshow("RGB", transform_rgb_bgr(observations["rgb"]))
 
     print("Episode finished after {} steps.".format(count_steps))

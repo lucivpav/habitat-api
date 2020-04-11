@@ -107,12 +107,20 @@ class PointNavDatasetV1(Dataset):
                     dataset_dir=dataset_dir,
                 )
 
+            if hasattr(config, 'FORCE_SCENE'):
+                scenes = [config.FORCE_SCENE]
+
             for scene in scenes:
                 scene_filename = self.content_scenes_path.format(
                     data_path=dataset_dir, scene=scene
                 )
                 with gzip.open(scene_filename, "rt") as f:
                     self.from_json(f.read(), scenes_dir=config.SCENES_DIR)
+                if hasattr(config, 'FORCE_EPISODE_ID'):
+                    episodeId = str(config.FORCE_EPISODE_ID)
+                    episode = next(filter(lambda episode: episode.episode_id == episodeId, self.episodes), None)
+                    assert(episode is not None)
+                    self.episodes = [episode]
 
         else:
             self.episodes = list(
