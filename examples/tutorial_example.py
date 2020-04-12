@@ -5,15 +5,8 @@ import habitat_sim
 
 from habitat.sims.habitat_simulator.actions import HabitatSimActionsSingleton
 
-FORWARD_KEY="w"
-LEFT_KEY="a"
-RIGHT_KEY="d"
-FINISH="f"
-
-
 def transform_rgb_bgr(image):
     return image[:, :, [2, 1, 0]]
-
 
 def example():
     outputDir = '/Volumes/GoogleDrive/Můj disk/ARTwin/personal/lucivpav/habitat'
@@ -29,18 +22,24 @@ def example():
     while not env.episode_over:
         keystroke = cv2.waitKey(0)
 
-        if keystroke == ord(FORWARD_KEY):
+        if keystroke == ord('w'):
             action = HabitatSimActions.MOVE_FORWARD
             print("action: FORWARD")
-        elif keystroke == ord(LEFT_KEY):
+        elif keystroke == ord('a'):
             action = HabitatSimActions.TURN_LEFT
             print("action: LEFT")
-        elif keystroke == ord(RIGHT_KEY):
+        elif keystroke == ord('d'):
             action = HabitatSimActions.TURN_RIGHT
             print("action: RIGHT")
-        elif keystroke == ord(FINISH):
+        elif keystroke == ord('f'):
             action = HabitatSimActions.STOP
             print("action: FINISH")
+        elif keystroke == 0:
+            action = HabitatSimActions.LOOK_UP
+            print("action: LOOK UP")
+        elif keystroke == 1:
+            action = HabitatSimActions.LOOK_DOWN
+            print("action: LOOK DOWN")
         else:
             print("INVALID KEY")
             continue

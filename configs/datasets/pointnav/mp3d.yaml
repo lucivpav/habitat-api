@@ -4,9 +4,12 @@ SIMULATOR:
   RGB_SENSOR:
     WIDTH: 1280
     HEIGHT: 720
+  ACTION_SPACE_CONFIG: 'v1'
 DATASET:
   TYPE: PointNav-v1
   SPLIT: train
   DATA_PATH: data/datasets/pointnav/mp3d/v1/{split}/{split}.json.gz
   FORCE_SCENE: 1pXnuDYAj8r
   FORCE_EPISODE_ID: 0 # TODO
+TASK:
+  POSSIBLE_ACTIONS: ['STOP', 'MOVE_FORWARD', 'TURN_LEFT', 'TURN_RIGHT', 'LOOK_UP', 'LOOK_DOWN']
