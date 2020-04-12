@@ -32,6 +32,30 @@ class LookRightish(SceneNodeControl):
             scene_node, -actuation_spec.amount, _Z_AXIS, actuation_spec.constraint
         )
 
+@habitat.registry.register_task_action
+class LookLeftish(SimulatorTaskAction):
+    def _get_uuid(self, *args, **kwargs) -> str:
+        return "look_leftish"
+
+    def step(self, *args, **kwargs):
+        return self._sim.step(HabitatSimActions.LOOK_LEFTISH)
+
+@habitat.registry.register_task_action
+class LookRightish(SimulatorTaskAction):
+    def _get_uuid(self, *args, **kwargs) -> str:
+        return "look_rightish"
+
+    def step(self, *args, **kwargs):
+        return self._sim.step(HabitatSimActions.LOOK_RIGHTISH)
+
+@habitat.registry.register_task_action
+class MoveBackwardAction(SimulatorTaskAction):
+    def _get_uuid(self, *args, **kwargs) -> str:
+        return "move_backward"
+
+    def step(self, *args, **kwargs):
+        return self._sim.step(HabitatSimActions.MOVE_BACKWARD)
+
 @habitat.registry.register_action_space_configuration(name="v1Extended")
 class HabitatSimV1ExtendedActionSpaceConfiguration(HabitatSimV1ActionSpaceConfiguration):
     def get(self):
@@ -45,25 +69,12 @@ class HabitatSimV1ExtendedActionSpaceConfiguration(HabitatSimV1ActionSpaceConfig
             "look_rightish",
             habitat_sim.ActuationSpec(amount=self.config.TILT_ANGLE)
         )
+        config[HabitatSimActions.MOVE_BACKWARD] = habitat_sim.ActionSpec(
+            "move_backward",
+            habitat_sim.ActuationSpec(amount=self.config.FORWARD_STEP_SIZE)
+        )
 
         return config
-
-@habitat.registry.register_task_action
-class LookLeftish(SimulatorTaskAction):
-    def _get_uuid(self, *args, **kwargs) -> str:
-        return "look_leftish"
-
-    def step(self, *args, **kwargs):
-        return self._sim.step(HabitatSimActions.LOOK_LEFTISH)
-
-
-@habitat.registry.register_task_action
-class LookRightish(SimulatorTaskAction):
-    def _get_uuid(self, *args, **kwargs) -> str:
-        return "look_rightish"
-
-    def step(self, *args, **kwargs):
-        return self._sim.step(HabitatSimActions.LOOK_RIGHTISH)
 
 def capture_sequence():
     outputDir = '/Volumes/GoogleDrive/Můj disk/ARTwin/personal/lucivpav/habitat'
@@ -73,15 +84,22 @@ def capture_sequence():
     if not os.path.isdir(posesDir):
         os.mkdir(posesDir)
 
-    HabitatSimActions.extend_action_space("LOOK_LEFTISH")
-    HabitatSimActions.extend_action_space("LOOK_RIGHTISH")
+    newActions = ['LOOK_LEFTISH', 'LOOK_RIGHTISH', 'MOVE_BACKWARD']
+
+    for newAction in newActions:
+        HabitatSimActions.extend_action_space(newAction)
+
     config = habitat.get_config("configs/datasets/pointnav/mp3d.yaml")
     config.defrost()
 
+    config.TASK.POSSIBLE_ACTIONS.extend(['LOOK_UP', 'LOOK_DOWN'])
+    config.TASK.POSSIBLE_ACTIONS.extend(newActions)
     config.TASK.ACTIONS.LOOK_LEFTISH = habitat.config.Config()
     config.TASK.ACTIONS.LOOK_LEFTISH.TYPE = "LookLeftish"
     config.TASK.ACTIONS.LOOK_RIGHTISH = habitat.config.Config()
     config.TASK.ACTIONS.LOOK_RIGHTISH.TYPE = "LookRightish"
+    config.TASK.ACTIONS.MOVE_BACKWARD = habitat.config.Config()
+    config.TASK.ACTIONS.MOVE_BACKWARD.TYPE = "MoveBackwardAction"
     config.SIMULATOR.ACTION_SPACE_CONFIG = "v1Extended"
     config.freeze()
 
@@ -102,6 +120,9 @@ def capture_sequence():
         if keystroke == ord('w'):
             action = HabitatSimActions.MOVE_FORWARD
             print("action: FORWARD")
+        elif keystroke == ord('s'):
+            action = HabitatSimActions.MOVE_BACKWARD
+            print("action: BACKWARD")
         elif keystroke == ord('a'):
             action = HabitatSimActions.TURN_LEFT
             print("action: LEFT")
