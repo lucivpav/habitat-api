@@ -5,11 +5,65 @@ import habitat_sim
 from habitat_sim.utils.common import quat_from_magnum
 import quaternion
 import numpy as np
-
-from habitat.sims.habitat_simulator.actions import HabitatSimActionsSingleton
+from habitat_sim.agent.controls.default_controls import _rotate_local, _Z_AXIS
+from habitat_sim.agent.controls.controls import ActuationSpec, SceneNodeControl
+from habitat_sim.scene import SceneNode
+from habitat.sims.habitat_simulator.actions import (
+    HabitatSimActions,
+    HabitatSimV1ActionSpaceConfiguration,
+    HabitatSimActionsSingleton
+)
+from habitat.tasks.nav.nav import SimulatorTaskAction
 
 def transform_rgb_bgr(image):
     return image[:, :, [2, 1, 0]]
+
+@habitat_sim.registry.register_move_fn(body_action=False)
+class LookLeftish(SceneNodeControl):
+    def __call__(self, scene_node: SceneNode, actuation_spec: ActuationSpec):
+        _rotate_local(
+            scene_node, actuation_spec.amount, _Z_AXIS, actuation_spec.constraint
+        )
+
+@habitat_sim.registry.register_move_fn(body_action=False)
+class LookRightish(SceneNodeControl):
+    def __call__(self, scene_node: SceneNode, actuation_spec: ActuationSpec):
+        _rotate_local(
+            scene_node, -actuation_spec.amount, _Z_AXIS, actuation_spec.constraint
+        )
+
+@habitat.registry.register_action_space_configuration(name="v1Extended")
+class HabitatSimV1ExtendedActionSpaceConfiguration(HabitatSimV1ActionSpaceConfiguration):
+    def get(self):
+        config = super().get()
+
+        config[HabitatSimActions.LOOK_LEFTISH] = habitat_sim.ActionSpec(
+            "look_leftish",
+            habitat_sim.ActuationSpec(amount=self.config.TILT_ANGLE)
+        )
+        config[HabitatSimActions.LOOK_RIGHTISH] = habitat_sim.ActionSpec(
+            "look_rightish",
+            habitat_sim.ActuationSpec(amount=self.config.TILT_ANGLE)
+        )
+
+        return config
+
+@habitat.registry.register_task_action
+class LookLeftish(SimulatorTaskAction):
+    def _get_uuid(self, *args, **kwargs) -> str:
+        return "look_leftish"
+
+    def step(self, *args, **kwargs):
+        return self._sim.step(HabitatSimActions.LOOK_LEFTISH)
+
+
+@habitat.registry.register_task_action
+class LookRightish(SimulatorTaskAction):
+    def _get_uuid(self, *args, **kwargs) -> str:
+        return "look_rightish"
+
+    def step(self, *args, **kwargs):
+        return self._sim.step(HabitatSimActions.LOOK_RIGHTISH)
 
 def capture_sequence():
     outputDir = '/Volumes/GoogleDrive/Můj disk/ARTwin/personal/lucivpav/habitat'
@@ -19,7 +73,19 @@ def capture_sequence():
     if not os.path.isdir(posesDir):
         os.mkdir(posesDir)
 
-    env = habitat.Env(config=habitat.get_config("configs/datasets/pointnav/mp3d.yaml"))
+    HabitatSimActions.extend_action_space("LOOK_LEFTISH")
+    HabitatSimActions.extend_action_space("LOOK_RIGHTISH")
+    config = habitat.get_config("configs/datasets/pointnav/mp3d.yaml")
+    config.defrost()
+
+    config.TASK.ACTIONS.LOOK_LEFTISH = habitat.config.Config()
+    config.TASK.ACTIONS.LOOK_LEFTISH.TYPE = "LookLeftish"
+    config.TASK.ACTIONS.LOOK_RIGHTISH = habitat.config.Config()
+    config.TASK.ACTIONS.LOOK_RIGHTISH.TYPE = "LookRightish"
+    config.SIMULATOR.ACTION_SPACE_CONFIG = "v1Extended"
+    config.freeze()
+
+    env = habitat.Env(config=config)
 
     print("Environment creation successful")
     observations = env.reset()
@@ -51,6 +117,12 @@ def capture_sequence():
         elif keystroke == 1:
             action = HabitatSimActions.LOOK_DOWN
             print("action: LOOK DOWN")
+        elif keystroke == 2:
+            action = HabitatSimActions.LOOK_LEFTISH
+            print("action: LOOK LEFTISH")
+        elif keystroke == 3:
+            action = HabitatSimActions.LOOK_RIGHTISH
+            print("action: LOOK RIGHTISH")
         else:
             print("INVALID KEY")
             continue
