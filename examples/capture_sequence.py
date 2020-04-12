@@ -166,7 +166,7 @@ def capture_sequence():
         diry = cameraDirection[1]
         dirz = cameraDirection[2]
         print(f'Rotation: {dirx},{diry},{dirz}')
-        posesFile.write('%0.2f %0.2f %0.2f %0.2f %0.2f %0.2f\n' % (x,y,z, dirx,diry,dirz))
+        posesFile.write('%d %0.2f %0.2f %0.2f %0.2f %0.2f %0.2f\n' % (count_steps, x,y,z, dirx,diry,dirz))
 
         cv2.imwrite(os.path.join(posesDir, f'{count_steps}.png'), transform_rgb_bgr(observations["rgb"]))
         cv2.imshow("RGB", transform_rgb_bgr(observations["rgb"]))
