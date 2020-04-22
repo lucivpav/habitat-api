@@ -79,7 +79,6 @@ class HabitatSimV1ExtendedActionSpaceConfiguration(HabitatSimV1ActionSpaceConfig
 def capture_sequence():
     outputDir = '/Volumes/GoogleDrive/Můj disk/ARTwin/personal/lucivpav/habitat'
     posesDir = os.path.join(outputDir, 'poses')
-    posesPath = os.path.join(posesDir, 'poses.csv')
 
     if not os.path.isdir(posesDir):
         os.mkdir(posesDir)
@@ -110,8 +109,6 @@ def capture_sequence():
     cv2.imshow("RGB", transform_rgb_bgr(observations["rgb"]))
 
     print("Agent stepping around inside environment.")
-    posesFile = open(posesPath, 'w')
-    posesFile.write('id x y z dirx diry dirz\n')
 
     count_steps = 0
     while not env.episode_over:
@@ -152,26 +149,21 @@ def capture_sequence():
         count_steps += 1
 
         state = env._sim.get_agent_state(0)
-        rotation1 = state.rotation
-        rotation2 = state.sensor_states['rgb'].rotation
-        rotation = rotation1 * rotation2
-        print(f'Position: {state.position}')
-        x = state.position[0]
-        y = state.position[1]
-        z = state.position[2]
+        rotation = state.sensor_states['rgb'].rotation
+        position = state.sensor_states['rgb'].position
+        print(f'Position: {position}')
+        t = np.reshape(position, (3,1))
         R = quaternion.as_rotation_matrix(rotation)
-        initialCameraDirection = np.array([0.0, 0.0, -1.0]).T
-        cameraDirection = R @ initialCameraDirection
-        dirx = cameraDirection[0]
-        diry = cameraDirection[1]
-        dirz = cameraDirection[2]
-        print(f'Rotation: {dirx},{diry},{dirz}')
-        posesFile.write('%d %0.2f %0.2f %0.2f %0.2f %0.2f %0.2f\n' % (count_steps, x,y,z, dirx,diry,dirz))
+        P = np.vstack((np.hstack((R,-R @ t)), np.array([0,0,0,1])))
+
+        posePath = os.path.join(posesDir, str(count_steps) + '.txt')
+        poseFile = open(posePath, 'w')
+        for i in range(4):
+            poseFile.write('%0.2f %0.2f %0.2f %0.2f\n' % (P[i,0],P[i,1],P[i,2],P[i,3]))
+        poseFile.close()
 
         cv2.imwrite(os.path.join(posesDir, f'{count_steps}.png'), transform_rgb_bgr(observations["rgb"]))
         cv2.imshow("RGB", transform_rgb_bgr(observations["rgb"]))
-
-    posesFile.close()
 
 if __name__ == "__main__":
     print(os.path.abspath('./'))
