@@ -88,7 +88,7 @@ def capture_sequence():
     for newAction in newActions:
         HabitatSimActions.extend_action_space(newAction)
 
-    config = habitat.get_config("configs/datasets/pointnav/mp3d.yaml")
+    config = habitat.get_config("configs/datasets/pointnav/ciirc.yaml")
     config.defrost()
 
     config.TASK.POSSIBLE_ACTIONS.extend(['LOOK_UP', 'LOOK_DOWN'])

@@ -1,0 +1,14 @@
+SIMULATOR:
+  AGENT_0:
+    SENSORS: ['RGB_SENSOR']
+  RGB_SENSOR:
+    WIDTH: 1344
+    HEIGHT: 756
+    HFOV: 67
+  ACTION_SPACE_CONFIG: 'v1'
+DATASET:
+  TYPE: PointNav-v1
+  SPLIT: train
+  DATA_PATH: data/datasets/pointnav/ciirc/v1/{split}/{split}.json.gz
+  FORCE_SCENE: B315
+  FORCE_EPISODE_ID: 0 # TODO
