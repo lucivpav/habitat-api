@@ -77,6 +77,7 @@ class HabitatSimV1ExtendedActionSpaceConfiguration(HabitatSimV1ActionSpaceConfig
         return config
 
 def capture_sequence():
+    environmentConfigPath = "configs/datasets/pointnav/ciirc.yaml"
     outputDir = '/Volumes/GoogleDrive/Můj disk/ARTwin/personal/lucivpav/habitat'
     posesDir = os.path.join(outputDir, 'poses')
 
@@ -88,7 +89,7 @@ def capture_sequence():
     for newAction in newActions:
         HabitatSimActions.extend_action_space(newAction)
 
-    config = habitat.get_config("configs/datasets/pointnav/ciirc.yaml")
+    config = habitat.get_config(environmentConfigPath)
     config.defrost()
 
     config.TASK.POSSIBLE_ACTIONS.extend(['LOOK_UP', 'LOOK_DOWN'])
